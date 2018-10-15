@@ -5,13 +5,19 @@
 		<!-- Set target humidity level -->
 		<targetRH>43</targetRH>
 		<!-- Set tolerance of how humidity level -->
-		<tolerance>2</tolerance>
-		<!-- Set time that humidifier should start. Must be in %H:%M:%S format. -->
-		<startTime>21:00:00</startTime>
-		<!-- Set how many hours you'd like the humidifier to run -->
-		<runMinutes>5</runMinutes>
+		<toleranceRH>2</tolerance>		
+		<!-- Minimum time for humidifier to run -->
+		<runMinutesRH>5</runMinutes>
 		<!-- Set the friendly name of your WeMo switch -->
-		<switchName>WeMo Insight</switchName>
+		<switchNameRH>humidifier</switchName>
+		<!-- Set target temperature level -->
+		<targetTemp>65</targetRH>
+		<!-- Set tolerance of how temperature level -->
+		<toleranceTemp>5</tolerance>		
+		<!-- Minimum time for fridge to run -->
+		<runMinutesTemp>10</runMinutes>
+		<!-- Set the friendly name of your WeMo switch -->
+		<switchNameTemp>temperature</switchName>
 	</settings>
 	<!-- DON'T CHANGE ANYTHING BELOW THIS LINE! -->
 	<status>
