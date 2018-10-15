@@ -1,4 +1,5 @@
 # Ralph's edit. 1233 10/15/18
+#need to make it do RH first, then temp. Need to change functions to be more 'general' for both RH and Temp
 # take control.py and th_2.c 
 # output a the temp & rh to log
 # modify weemo based on being above or below targets
@@ -29,7 +30,7 @@ def startWeMoEnvironment():
     env.start()
     return env
 
-def discoverWeMoDevices(env): #does this find more than 1?
+def discoverWeMoDevices(env): 
     "Discover WeMo devices"
     env.discover(seconds=3)
     return
@@ -97,21 +98,32 @@ enabled = settingsXML.find("enabled").text
 if enabled != "True":
     raise SystemExit(1)
 
-# Get the target humidity level
-targetRH = int(settingsXML.find("targetRH").text)
-# Get the tolerance for humidity level
-tolerance = int(settingsXML.find("tolerance").text)
-# Get time of day (24 hour format) in which the humidifier should start running
-startTime = settingsXML.find("startTime").text
-# Get how many hours it should run and convert to seconds
-runMinutes = int(settingsXML.find("runMinutes").text)
-# Get "friendly" name of WeMo Switch
-switchName = settingsXML.find("switchName").text
+	
+#Get values for humidifier from XML
+targetRH = int(settingsXML.find("targetRH").text) # Get the target humidity level
+toleranceRH = int(settingsXML.find("toleranceRH").text) # Get the tolerance for humidity level
+runMinutesRH = int(settingsXML.find("runMinutesRH").text) # Get the min time for Humidifier to run
+# may need to convert minutes to seconds.. like original script
+switchNameRH = settingsXML.find("switchNameRH").text # Get "friendly" name of WeMo Switch for humidifier
 
 # Calculate maximum humidity
-maxRH = targetRH + tolerance
+maxRH = targetRH + toleranceRH
 # Calculate minimum humidity
-minRH = targetRH - tolerance
+minRH = targetRH - toleranceRH
+
+#Get values for temperature from XML
+targetTemp = int(settingsXML.find("targetTemp").text) # Get the target temperature
+toleranceTemp = int(settingsXML.find("toleranceTemp").text) # Get the tolerance for temperature
+runMinutesTemp = int(settingsXML.find("runMinutesTemp").text) # Get the min time for fridge to run
+# may need to convert minutes to seconds.. like original script
+switchNameTemp = settingsXML.find("switchNameTemp").text # Get "friendly" name of WeMo Switch for temperature
+
+# Calculate maximum temperature
+maxRH = targetTemp + toleranceTemp
+# Calculate minimum temperature
+minRH = targetTemp - toleranceTemp
+
+
 
 # Run program to get temp and humidity from sensor
 p = Popen(["./th_2"], stdout=PIPE, stderr=PIPE)
@@ -130,55 +142,27 @@ temp, rh = output.split()
 temp = float(temp)
 rh = float(rh)
 
-# Set time format
-timeFormat = "%Y-%m-%d %H:%M:%S.%f"
-
-# Get current date and time as datetime object
-currentDateTime = datetime.now()
-
-# Start WeMo environment
-env = startWeMoEnvironment()
-
-# Check the last time we ran a WeMo discovery cycle
-lastDiscovery = statusXML.find("lastDiscovery").text
-
-if lastDiscovery is not None:
-    # Convert to datetime object
-    lastDiscovery = datetime.strptime(lastDiscovery, timeFormat)
-
-# Check if lastDiscovery is None or was more than 24 hours ago
-# this is only checking to see if the wemo still exists, not the values from rh/temp
-if lastDiscovery is None or (lastDiscovery + timedelta(hours=24)) < currentDateTime:
-    # Clear WeMo cache
-    p = Popen(["sudo", "wemo", "clear"], stdout=PIPE, stderr=PIPE)
-    p.communicate()
-    # Check if an error was returned
-    if err != '': print "WARNING: wemo clear returned error "+str(err)
-    # Rediscover devices
-    discoverWeMoDevices(env)
-    lastDiscovery = currentDateTime
-
-# Connect to WeMo Switch
-switch = connectToWeMo(env, switchName)
+# Connect to WeMo Switch - RH First
+switchRH = connectToWeMo(env, switchNameRH)
 
 # Status remains at 4 if no conditions are matched
 status = 4
 
 # Check if humidifier is running
-if isHumidifierRunning(switch): #if switch is on
+if isHumidifierRunning(switchRH): #if switch is on
     # Check if humidifier is out of water
-    if isHumidifierOutOfWater(switch):
+    if isHumidifierOutOfWater(switchRH):
         status = 2
         friendlyStatus = "Out of Water"
     else:
         status = 1
         friendlyStatus = "Running"
 # Check if humidifier is stopped
-elif isHumidifierStopped(switch):
+elif isHumidifierStopped(switchRH):
     status = 0
     friendlyStatus = "Not Running"
 
-#print "Status = "+str(status)
+print "Status = "+str(status)
 
 # If status is still 4, there's an issue reading the status
 if status == 4:
@@ -186,48 +170,17 @@ if status == 4:
     # Exit with error status
     raise SystemExit(1)
 
-# Get next time humidifier should start
-nextStart = statusXML.find("nextScheduledStart").text
-
-# If nextStart is None, assign to next start time on today's date
-if nextStart is None:
-    nextStart = currentDateTime.strftime("%Y-%m-%d")+" "+startTime+".000001"
-
-# Convert nextStart into datetime object
-nextStart = datetime.strptime(nextStart, timeFormat)
-
-# Get next time humidifier should stop
-nextStop = statusXML.find("nextScheduledStop").text
-
-# If nextStop is None, make it nextStart + runMinutes
-if nextStop is None:
-    nextStop = nextStart + timedelta(minutes=runMinutes) #change this to minutes???
-else:
-    # Convert nextStop into datetime object
-    nextStop = datetime.strptime(nextStop, timeFormat)
-
-# Check if start and stop times need to be updated
-# changed to minuites...
-if currentDateTime > nextStop:
-    nextStart = currentDateTime.strftime("%Y-%m-%d")+" "+startTime+".000001"
-    # Convert nextStart into datetime object
-    nextStart = datetime.strptime(nextStart, timeFormat)
-    if currentDateTime > nextStart:
-        # Add 24 hours to nextStart
-        nextStart = nextStart + timedelta(minutes=runMinutes)
-    nextStop = nextStart + timedelta(minutes=runMinutes)
 
 # Start or stop humidifier based on time and relative humidity
-if status == 0 and rh <= minRH and currentDateTime >= nextStart:
-    startHumidifier(switch)
+if status == 0 and rh <= minRH:
+    startHumidifier(switchRH)
     friendlyStatus = "Running"
-    statusXML.find("startedDateTime").text = str(currentDateTime)
-    print str(currentDateTime)+"\tStarted\tTemp: "+str(temp)+"\tRH: "+str(rh)
-elif status > 0 and (rh >= maxRH or currentDateTime < nextStart):
+
+elif status > 0 and (rh >= maxRH):
     stopHumidifier(switch)
     friendlyStatus = "Not Running"
     statusXML.find("stoppedDateTime").text = str(currentDateTime)
-    print str(currentDateTime)+"\tStopped\tTemp: "+str(temp)+"\tRH: "+str(rh)
+    
 elif status == 2:
     sendOutOfWaterAlert()
     friendlyStatus = "Out of Water"
