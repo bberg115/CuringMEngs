@@ -1,0 +1,7 @@
+2018-10-14 18:23:09.044861	Stopped	Temp: 107.78	RH: 48.2
+ERROR: th_2 returned error sudo: home/pi//raspi-rht/./th_2: command not found
+
+ERROR: th_2 returned error sudo: home/pi/raspi-rht/./th_2: command not found
+
+ERROR: th_2 returned error sudo: home/pi/raspi-rht/./th_2: command not found
+
