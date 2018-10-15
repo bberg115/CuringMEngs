@@ -1,4 +1,4 @@
-# Ralph's edit.
+# Ralph's edit. 1233 10/15/18
 # take control.py and th_2.c 
 # output a the temp & rh to log
 # modify weemo based on being above or below targets
@@ -11,6 +11,16 @@ from os.path import expanduser
 from ouimeaux.environment import Environment
 from datetime import datetime, timedelta
 import xml.etree.cElementTree as ET
+import logging #added this based on python.org
+
+# attempt at testing a log...
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
+logging.debug('This message should go to the log file')
+logging.info('So should this')
+logging.warning('And this, too')
+
+
+
 
 # Functions
 def startWeMoEnvironment():
@@ -104,7 +114,7 @@ maxRH = targetRH + tolerance
 minRH = targetRH - tolerance
 
 # Run program to get temp and humidity from sensor
-p = Popen(["sudo /home/pi/raspi-rht/./th_2"], stdout=PIPE, stderr=PIPE)
+p = Popen(["./th_2"], stdout=PIPE, stderr=PIPE)
 output, err = p.communicate()
 
 # Check if an error was returned
