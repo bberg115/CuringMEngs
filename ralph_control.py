@@ -1,4 +1,4 @@
-# Ralph's edit. 2050 10/15/18
+# Ralph's edit. 2152 10/15/18
 #need to make it do RH first, then temp. Need to change functions to be more 'general' for both RH and Temp
 # take control.py and th_2.c 
 # output a the temp & rh to log
