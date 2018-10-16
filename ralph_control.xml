@@ -5,11 +5,11 @@
 		<!-- Set target humidity level -->
 		<targetRH>43</targetRH>
 		<!-- Set tolerance of how humidity level -->
-		<toleranceRH>2</toleranceRB>		
+		<toleranceRH>2</toleranceRH>		
 		<!-- Minimum time for humidifier to run -->
-		<runMinutesRH>5</runMinutesRB>
+		<runMinutesRH>5</runMinutesRH>
 		<!-- Set the friendly name of your WeMo switch -->
-		<switchNameRH>humidifier</switchNameRB>
+		<switchNameRH>humidifier</switchNameRH>
 		<!-- Set target temperature level -->
 		<targetTemp>65</targetTemp>
 		<!-- Set tolerance of how temperature level -->
