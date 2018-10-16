@@ -12,6 +12,7 @@ from os.path import expanduser
 from ouimeaux.environment import Environment
 from datetime import datetime, timedelta
 import xml.etree.cElementTree as ET
+import os #for parsing
 import csv #export to CSV
 
 
@@ -78,8 +79,8 @@ env = startWeMoEnvironment()
 discoverWeMoDevices(env) #need to run once a day?
 
 # Read settings from XML file
-xmlPath = "ralph_control.xml" #will pre-define characteristics / limits
-tree = ET.parse(xmlPath)
+xmlPath = "/home/pi/raspi-rht/" #will pre-define characteristics / limits
+tree = ET.parse(os.path.join(xmlPath, 'ralph_control.xml'))
 root = tree.getroot()
 settingsXML = root.find("settings")
 statusXML = root.find("status")
@@ -133,9 +134,8 @@ minTemp = targetTemp - toleranceTemp
 
 
 
-
 # Run program to get temp and humidity from sensor
-p = Popen(["./th_2"], stdout=PIPE, stderr=PIPE)
+p = Popen([os.path.join(xmlPath,"./th_2")], stdout=PIPE, stderr=PIPE)
 output, err = p.communicate()
 
 # Check if an error was returned
@@ -255,10 +255,10 @@ statusXML.find("lastTemp").text = str(temp)
 #statusXML.find("lastUpdate").text = str(currentDateTime)
 statusXML.find("lastStatus").text = str(friendlyStatusRH)
 #statusXML.find("lastDiscovery").text = str(lastDiscovery)
-tree.write(xmlPath)
 
-with open('log_export.csv', mode='a') as log_file:
+tree.write(os.path.join(xmlPath, 'ralph_control.xml'))
+
+with open('/home/pi/raspi-rht/log_export.csv', mode='a') as log_file:
     log_writer = csv.writer(log_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     
     log_writer.writerow(['Date: '+str(currentDateTime),'Temperature: '+str(temp), 'Temperature: '+str(friendlyStatusTemp),'RH: '+str(rh),'RH: '+str(friendlyStatusRH)])    
-
