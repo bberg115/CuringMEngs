@@ -12,14 +12,7 @@ from os.path import expanduser
 from ouimeaux.environment import Environment
 from datetime import datetime, timedelta
 import xml.etree.cElementTree as ET
-import logging #added this based on python.org
-
-# attempt at testing a log...
-#logging.basicConfig(filename='example.log',level=logging.DEBUG)
-#logging.debug('This message should go to the log file')
-#logging.info('So should this')
-#logging.warning('And this, too')
-
+import csv #export to CSV
 
 
 
@@ -158,6 +151,12 @@ temp, rh = output.split()
 temp = float(temp)
 rh = float(rh)
 
+# Set time format
+timeFormat = "%Y-%m-%d %H:%M:%S.%f"
+
+# Get current date and time as datetime object
+currentDateTime = datetime.now()
+
 # Connect to WeMo Switch - RH First
 #change the following to loop between RH and Temp
 switchRH = connectToWeMo(env, switchNameRH)
@@ -202,7 +201,8 @@ elif statusRH == 2:
     sendOutNoPowerAlert()
     friendlyStatusRH = "No Power Draw"
 	
-print "FriendlyRH = "+str(friendlyStatusRH)
+print "RH Status: "+str(friendlyStatusRH)
+print "RH Value: "+str(rh)
 
 
 
@@ -242,7 +242,8 @@ elif statusTemp == 2:
     sendOutNoPowerAlert()
     friendlyStatusTemp = "No Temp Power Draw"
 	
-print "FriendlyTemp = "+str(friendlyStatusTemp)
+print "Temp Status: "+str(friendlyStatusTemp)
+print "Temp Value: "+str(temp)
 	
 	
 	
@@ -252,6 +253,12 @@ print "FriendlyTemp = "+str(friendlyStatusTemp)
 statusXML.find("lastRH").text = str(rh)
 statusXML.find("lastTemp").text = str(temp)
 #statusXML.find("lastUpdate").text = str(currentDateTime)
-statusXML.find("lastStatus").text = str(friendlyStatus)
+statusXML.find("lastStatus").text = str(friendlyStatusRH)
 #statusXML.find("lastDiscovery").text = str(lastDiscovery)
 tree.write(xmlPath)
+
+with open('log_export.csv', mode='a') as log_file:
+    log_writer = csv.writer(log_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    
+    log_writer.writerow(['Date: '+str(currentDateTime),'Temperature: '+str(temp), 'Temperature: '+str(friendlyStatusTemp),'RH: '+str(rh),'RH: '+str(friendlyStatusRH)])    
+
