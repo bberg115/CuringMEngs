@@ -15,10 +15,10 @@ import xml.etree.cElementTree as ET
 import logging #added this based on python.org
 
 # attempt at testing a log...
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
-logging.debug('This message should go to the log file')
-logging.info('So should this')
-logging.warning('And this, too')
+#logging.basicConfig(filename='example.log',level=logging.DEBUG)
+#logging.debug('This message should go to the log file')
+#logging.info('So should this')
+#logging.warning('And this, too')
 
 
 
@@ -102,7 +102,7 @@ targetRH = int(settingsXML.find("targetRH").text) # Get the target humidity leve
 toleranceRH = int(settingsXML.find("toleranceRH").text) # Get the tolerance for humidity level
 runMinutesRH = int(settingsXML.find("runMinutesRH").text) # Get the min time for Humidifier to run
 # may need to convert minutes to seconds.. like original script
-switchName = settingsXML.find("switchNameRH").text # Get "friendly" name of WeMo Switch for humidifier
+switchNameRH = settingsXML.find("switchNameRH").text # Get "friendly" name of WeMo Switch for humidifier
 
 # Calculate maximum humidity
 maxRH = targetRH + toleranceRH
@@ -160,47 +160,89 @@ rh = float(rh)
 
 # Connect to WeMo Switch - RH First
 #change the following to loop between RH and Temp
-switch = connectToWeMo(env, switchName)
-
+switchRH = connectToWeMo(env, switchNameRH)
+switchTemp = connectToWeMo(env, switchNameTemp)
 # Status remains at 4 if no conditions are matched
-status = 4
+statusRH = 4
+statusTemp = 4
 
 # Check if humidifier is running
-if isSwitchRunning(switch): #if switch is on
+if isSwitchRunning(switchRH): #if switch is on
     # Check if humidifier is out of water
-    if isSwitchDrawingPower(switch):
-        status = 2
-        friendlyStatus = "Out of Water"
+    if isSwitchDrawingPower(switchRH):
+        statusRH = 2
+        friendlyStatusRH = "Out of Water"
     else:
-        status = 1
-        friendlyStatus = "Running"
+        statusRH = 1
+        friendlyStatusRH = "Running"
 # Check if humidifier is stopped
-elif isSwitchStopped(switch):
-    status = 0
-    friendlyStatus = "Not Running"
+elif isSwitchStopped(switchRH):
+    statusRH = 0
+    friendlyStatusRH = "Not Running"
 
-print "Status = "+str(status)
 
 # If status is still 4, there's an issue reading the status
-if status == 4:
+if statusRH == 4:
     print "ERROR: Unable to read WeMo status"
     # Exit with error status
     raise SystemExit(1)
 
 
 # Start or stop humidifier based on time and relative humidity
-if status == 0 and rh <= minRH:
-    startSwitch(switch)
-    friendlyStatus = "Running"
+if statusRH == 0 and rh <= minRH:
+    startSwitch(switchRH)
+    friendlyStatusRH = "Running"
 
-elif status > 0 and (rh >= maxRH):
-    stopSwitch(switch)
-    friendlyStatus = "Not Running"
+elif statusRH > 0 and (rh >= maxRH):
+    stopSwitch(switchRH)
+    friendlyStatusRH = "Not Running"
 #    statusXML.find("stoppedDateTime").text = str(currentDateTime)
     
-elif status == 2:
+elif statusRH == 2:
     sendOutNoPowerAlert()
-    friendlyStatus = "No Power Draw"
+    friendlyStatusRH = "No Power Draw"
+	
+print "FriendlyRH = "+str(friendlyStatusRH)
+
+
+
+# Check if temp is running
+if isSwitchRunning(switchTemp): #if switch is on
+    # Check if humidifier is out of water
+    if isSwitchDrawingPower(switchTemp):
+        statusTemp = 2
+        friendlyStatusTemp = "Out of Water"
+    else:
+        statusTemp = 1
+        friendlyStatusTemp = "Running"
+# Check if humidifier is stopped
+elif isSwitchStopped(switchTemp):
+    statusTemp = 0
+    friendlyStatusTemp = "Not Running"
+
+
+# If status is still 4, there's an issue reading the status
+if statusTemp == 4:
+    print "ERROR: Unable to read Temp WeMo status"
+    # Exit with error status
+    raise SystemExit(1)
+
+
+# Start or stop humidifier based on time and relative humidity
+if statusTemp == 0 and temp >= maxTemp:
+    startSwitch(switchTemp)
+    friendlyStatusTemp = "Running"
+
+elif statusTemp > 0 and (temp <= minTemp):
+    stopSwitch(switchTemp)
+    friendlyStatusTemp = "Not Running"
+#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
+    
+elif statusTemp == 2:
+    sendOutNoPowerAlert()
+    friendlyStatusTemp = "No Temp Power Draw"
+	
+print "FriendlyTemp = "+str(friendlyStatusTemp)
 	
 	
 	
