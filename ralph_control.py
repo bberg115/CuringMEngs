@@ -1,9 +1,6 @@
-# Ralph's edit. 2152 10/15/18
-#need to make it do RH first, then temp. Need to change functions to be more 'general' for both RH and Temp
+# Ralph's edit. 10/16/18
 # take control.py and th_2.c 
-# output a the temp & rh to log
-# modify weemo based on being above or below targets
-# assumes that this require py2.7
+# need to add a runningRH/runningTemp to make sure that it stays on/off for min time
 
 
 # Imports
@@ -76,7 +73,32 @@ def stopSwitch(switch):
     return
 
 env = startWeMoEnvironment()
-discoverWeMoDevices(env) #need to run once a day?
+
+# Set time format
+timeFormat = "%Y-%m-%d %H:%M:%S.%f"
+
+# Get current date and time as datetime object
+currentDateTime = datetime.now()
+
+
+
+
+if lastDiscovery is not None:
+    # Convert to datetime object
+    lastDiscovery = datetime.strptime(lastDiscovery, timeFormat)
+	
+# Check if lastDiscovery is None or was more than 24 hours ago
+if lastDiscovery is None or (lastDiscovery + timedelta(hours=24)) < currentDateTime:
+    # Clear WeMo cache
+    p = Popen(["sudo", "wemo", "clear"], stdout=PIPE, stderr=PIPE)
+    p.communicate()
+    # Check if an error was returned
+    if err != '': print "WARNING: wemo clear returned error "+str(err)
+    # Rediscover devices
+    discoverWeMoDevices(env)
+    lastDiscovery = currentDateTime	
+	
+	
 
 # Read settings from XML file
 xmlPath = "/home/pi/raspi-rht/" #will pre-define characteristics / limits
@@ -90,11 +112,25 @@ enabled = settingsXML.find("enabled").text
 if enabled != "True":
     raise SystemExit(1)
 
+#make sure that run/stop doesn't happen too often
+#if none, assume now eventhough this isn't 100% correct on startup
+lastCommandRH = statusXML.find("lastCommandRH").text
+if lastCommandRH is None;
+	lastCommandRH = str(currentDateTime)
+
+lastCommandTemp = statusXML.find("lastCommandTemp").text
+if lastCommandTemp is None;
+	lastCommandTemp = str(currentDateTime)
+		
+# Check the last time we ran a WeMo discovery cycle
+lastDiscovery = statusXML.find("lastDiscovery").text
+	
 	
 #Get values for humidifier from XML
 targetRH = int(settingsXML.find("targetRH").text) # Get the target humidity level
 toleranceRH = int(settingsXML.find("toleranceRH").text) # Get the tolerance for humidity level
 runMinutesRH = int(settingsXML.find("runMinutesRH").text) # Get the min time for Humidifier to run
+runMinutesTemp = int(settingsXML.find("runMinutesTemp").text) # Get the min time for Humidifier to run
 # may need to convert minutes to seconds.. like original script
 switchNameRH = settingsXML.find("switchNameRH").text # Get "friendly" name of WeMo Switch for humidifier
 
@@ -151,12 +187,9 @@ temp, rh = output.split()
 temp = float(temp)
 rh = float(rh)
 
-# Set time format
-timeFormat = "%Y-%m-%d %H:%M:%S.%f"
 
-# Get current date and time as datetime object
-currentDateTime = datetime.now()
-
+	
+	
 # Connect to WeMo Switch - RH First
 #change the following to loop between RH and Temp
 switchRH = connectToWeMo(env, switchNameRH)
@@ -189,13 +222,20 @@ if statusRH == 4:
 
 # Start or stop humidifier based on time and relative humidity
 if statusRH == 0 and rh <= minRH:
-    startSwitch(switchRH)
-    friendlyStatusRH = "Running"
+    if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
+		startSwitch(switchRH)
+		lastCommandRH = currentDateTime
+		friendlyStatusRH = "Running"
+	elif
+		print "RH Off-Time Too Short"
 
 elif statusRH > 0 and (rh >= maxRH):
-    stopSwitch(switchRH)
-    friendlyStatusRH = "Not Running"
-#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
+	if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
+	    stopSwitch(switchRH)
+		lastCommandRH = currentDateTime
+		friendlyStatusRH = "Not Running"#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
+	elif
+		print "RH On-Time Too Short"
     
 elif statusRH == 2:
     sendOutNoPowerAlert()
@@ -230,13 +270,21 @@ if statusTemp == 4:
 
 # Start or stop humidifier based on time and relative humidity
 if statusTemp == 0 and temp >= maxTemp:
-    startSwitch(switchTemp)
-    friendlyStatusTemp = "Running"
+	if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
+		startSwitch(switchTemp)
+		lastCommandTemp = currentDateTime
+		friendlyStatusTemp = "Running"
+	elif
+		print "RH Off-Time Too Short"	
 
 elif statusTemp > 0 and (temp <= minTemp):
-    stopSwitch(switchTemp)
-    friendlyStatusTemp = "Not Running"
-#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
+	if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
+		stopSwitch(switchTemp)
+		lastCommandTemp = currentDateTime
+		friendlyStatusTemp = "Not Running"
+	elif
+		print "RH On-Time Too Short"
+
     
 elif statusTemp == 2:
     sendOutNoPowerAlert()
@@ -248,17 +296,15 @@ print "Temp Value: "+str(temp)
 	
 	
 # Update status in XML file
-#statusXML.find("nextScheduledStart").text = str(nextStart)
-#statusXML.find("nextScheduledStop").text = str(nextStop)
 statusXML.find("lastRH").text = str(rh)
 statusXML.find("lastTemp").text = str(temp)
-#statusXML.find("lastUpdate").text = str(currentDateTime)
-statusXML.find("lastStatus").text = str(friendlyStatusRH)
-#statusXML.find("lastDiscovery").text = str(lastDiscovery)
+statusXML.find("lastDiscovery").text = str(lastDiscovery)
+statusXML.find("lastCommandRH").text = str(lastCommandRH)
+statusXML.find("lastCommandTemp").text = str(lastCommandTemp)
 
 tree.write(os.path.join(xmlPath, 'ralph_control.xml'))
 
 with open('/home/pi/raspi-rht/log_export.csv', mode='a') as log_file:
     log_writer = csv.writer(log_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     
-    log_writer.writerow(['Date: '+str(currentDateTime),'Temperature: '+str(temp), 'Temperature: '+str(friendlyStatusTemp),'RH: '+str(rh),'RH: '+str(friendlyStatusRH)])    
+    log_writer.writerow(['Date: '+str(currentDateTime),'Temperature: '+str(temp), 'Temperature: '+str(friendlyStatusTemp),'RH: '+str(rh),'RH: '+str(friendlyStatusRH)])  
