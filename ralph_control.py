@@ -83,20 +83,7 @@ currentDateTime = datetime.now()
 
 
 
-if lastDiscovery is not None:
-    # Convert to datetime object
-    lastDiscovery = datetime.strptime(lastDiscovery, timeFormat)
-	
-# Check if lastDiscovery is None or was more than 24 hours ago
-if lastDiscovery is None or (lastDiscovery + timedelta(hours=24)) < currentDateTime:
-    # Clear WeMo cache
-    p = Popen(["sudo", "wemo", "clear"], stdout=PIPE, stderr=PIPE)
-    p.communicate()
-    # Check if an error was returned
-    if err != '': print "WARNING: wemo clear returned error "+str(err)
-    # Rediscover devices
-    discoverWeMoDevices(env)
-    lastDiscovery = currentDateTime	
+
 	
 	
 
@@ -115,15 +102,19 @@ if enabled != "True":
 #make sure that run/stop doesn't happen too often
 #if none, assume now eventhough this isn't 100% correct on startup
 lastCommandRH = statusXML.find("lastCommandRH").text
-if lastCommandRH is None;
+
+if lastCommandRH is None:
 	lastCommandRH = str(currentDateTime)
+	
+lastCommandRH = datetime.strptime(lastCommandRH, timeFormat)
 
 lastCommandTemp = statusXML.find("lastCommandTemp").text
-if lastCommandTemp is None;
+if lastCommandTemp is None:
 	lastCommandTemp = str(currentDateTime)
-		
+lastCommandTemp = datetime.strptime(lastCommandTemp, timeFormat)		
 # Check the last time we ran a WeMo discovery cycle
-lastDiscovery = statusXML.find("lastDiscovery").text
+#lastDiscovery = statusXML.find("lastDiscovery").text
+
 	
 	
 #Get values for humidifier from XML
@@ -187,8 +178,22 @@ temp, rh = output.split()
 temp = float(temp)
 rh = float(rh)
 
-
+#causes error - cannot find wemo if waiting
+#if lastDiscovery is not None:
+#    # Convert to datetime object
+#    lastDiscovery = datetime.strptime(lastDiscovery, timeFormat)
 	
+# Check if lastDiscovery is None or was more than 24 hours ago
+#if lastDiscovery is None or (lastDiscovery + timedelta(hours=24)) < currentDateTime:
+#    # Clear WeMo cache
+#    p = Popen(["sudo", "wemo", "clear"], stdout=PIPE, stderr=PIPE)
+#    p.communicate()
+#    # Check if an error was returned
+#    if err != '': print "WARNING: wemo clear returned error "+str(err)
+#    # Rediscover devices
+#    discoverWeMoDevices(env)
+#    lastDiscovery = currentDateTime	
+discoverWeMoDevices(env)	
 	
 # Connect to WeMo Switch - RH First
 #change the following to loop between RH and Temp
@@ -207,9 +212,11 @@ if isSwitchRunning(switchRH): #if switch is on
     else:
         statusRH = 1
         friendlyStatusRH = "Running"
+        #print "Thinks humidifier is on"
 # Check if humidifier is stopped
 elif isSwitchStopped(switchRH):
     statusRH = 0
+    #print "Thinks humidifier is off"
     friendlyStatusRH = "Not Running"
 
 
@@ -223,26 +230,26 @@ if statusRH == 4:
 # Start or stop humidifier based on time and relative humidity
 if statusRH == 0 and rh <= minRH:
     if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
-		startSwitch(switchRH)
-		lastCommandRH = currentDateTime
-		friendlyStatusRH = "Running"
-	elif
-		print "RH Off-Time Too Short"
+	startSwitch(switchRH)
+	lastCommandRH = currentDateTime
+	friendlyStatusRH = "Running"
+    else:
+	print "RH Off-Time Too Short"
 
 elif statusRH > 0 and (rh >= maxRH):
-	if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
-	    stopSwitch(switchRH)
-		lastCommandRH = currentDateTime
-		friendlyStatusRH = "Not Running"#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
-	elif
-		print "RH On-Time Too Short"
-    
+    if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
+        stopSwitch(switchRH)
+        lastCommandRH = currentDateTime
+        friendlyStatusRH = "Not Running"#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
+    else:
+        print "RH On-Time Too Short"
+
 elif statusRH == 2:
     sendOutNoPowerAlert()
-    friendlyStatusRH = "No Power Draw"
+    friendlyStatusRH = "No Water"
 	
 print "RH Status: "+str(friendlyStatusRH)
-print "RH Value: "+str(rh)
+print ("RH Value: " + str(rh) + " (" + str(minRH) + ")")
 
 
 
@@ -270,20 +277,20 @@ if statusTemp == 4:
 
 # Start or stop humidifier based on time and relative humidity
 if statusTemp == 0 and temp >= maxTemp:
-	if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
-		startSwitch(switchTemp)
-		lastCommandTemp = currentDateTime
-		friendlyStatusTemp = "Running"
-	elif
-		print "RH Off-Time Too Short"	
+    if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
+        startSwitch(switchTemp)
+        lastCommandTemp = currentDateTime
+        friendlyStatusTemp = "Running"
+    else:
+        print "Temp Off-Time Too Short"	
 
 elif statusTemp > 0 and (temp <= minTemp):
-	if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
-		stopSwitch(switchTemp)
-		lastCommandTemp = currentDateTime
-		friendlyStatusTemp = "Not Running"
-	elif
-		print "RH On-Time Too Short"
+    if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
+        stopSwitch(switchTemp)
+        lastCommandTemp = currentDateTime
+        friendlyStatusTemp = "Not Running"
+    else:
+        print "RH On-Time Too Short"
 
     
 elif statusTemp == 2:
@@ -291,15 +298,17 @@ elif statusTemp == 2:
     friendlyStatusTemp = "No Temp Power Draw"
 	
 print "Temp Status: "+str(friendlyStatusTemp)
-print "Temp Value: "+str(temp)
+print("Temp Value: " + str(temp) + " (" + str(maxTemp) + ")")
 	
 	
 	
 # Update status in XML file
 statusXML.find("lastRH").text = str(rh)
 statusXML.find("lastTemp").text = str(temp)
-statusXML.find("lastDiscovery").text = str(lastDiscovery)
+#statusXML.find("lastDiscovery").text = str(lastDiscovery)
+statusXML.find("friendlyStatusRH").text = str(friendlyStatusRH)
 statusXML.find("lastCommandRH").text = str(lastCommandRH)
+statusXML.find("friendlyStatusTemp").text = str(friendlyStatusTemp)
 statusXML.find("lastCommandTemp").text = str(lastCommandTemp)
 
 tree.write(os.path.join(xmlPath, 'ralph_control.xml'))
@@ -307,4 +316,4 @@ tree.write(os.path.join(xmlPath, 'ralph_control.xml'))
 with open('/home/pi/raspi-rht/log_export.csv', mode='a') as log_file:
     log_writer = csv.writer(log_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     
-    log_writer.writerow(['Date: '+str(currentDateTime),'Temperature: '+str(temp), 'Temperature: '+str(friendlyStatusTemp),'RH: '+str(rh),'RH: '+str(friendlyStatusRH)])  
+    log_writer.writerow([' '+str(currentDateTime), ' ' +str(minRH),' '+str(rh), ' ' +str(friendlyStatusRH), ' '+str(maxTemp),' '+str(temp), ' ' +str(friendlyStatusTemp)])
