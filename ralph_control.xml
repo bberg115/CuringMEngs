@@ -1,34 +1,30 @@
 <root>
 	<settings>
-		<!-- Set to False to stop control.py from running -->
+		
 		<enabled>True</enabled>
-		<!-- Set target humidity level -->
-		<targetRH>43</targetRH>
-		<!-- Set tolerance of how humidity level -->
+		
+		<targetRH>90</targetRH>
+		
 		<toleranceRH>2</toleranceRH>		
-		<!-- Minimum time for humidifier to run -->
+		
 		<runMinutesRH>5</runMinutesRH>
-		<!-- Set the friendly name of your WeMo switch -->
+		
 		<switchNameRH>humidifier</switchNameRH>
-		<!-- Set target temperature level -->
-		<targetTemp>65</targetTemp>
-		<!-- Set tolerance of how temperature level -->
+		
+		<targetTemp>60</targetTemp>
+		
 		<toleranceTemp>5</toleranceTemp>		
-		<!-- Minimum time for fridge to run -->
+		
 		<runMinutesTemp>10</runMinutesTemp>
-		<!-- Set the friendly name of your WeMo switch -->
+		
 		<switchNameTemp>temperature</switchNameTemp>
 	</settings>
-	<!-- DON'T CHANGE ANYTHING BELOW THIS LINE! -->
+	
 	<status>
-		<startedDateTime />
-		<stoppedDateTime />
-		<nextScheduledStart />
-		<nextScheduledStop />
-		<lastRH />
-		<lastTemp />
-		<lastUpdate />
-		<lastStatus />
+		<lastRH>53.5</lastRH>
+		<lastTemp>64.76</lastTemp>
 		<lastDiscovery />
+		<lastCommandRH />
+		<lastCommandTemp />
 	</status>
 </root>
