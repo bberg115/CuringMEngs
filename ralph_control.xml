@@ -3,28 +3,29 @@
 		
 		<enabled>True</enabled>
 		
-		<targetRH>90</targetRH>
+		<targetRH>100</targetRH>
 		
-		<toleranceRH>2</toleranceRH>		
+		<toleranceRH>5</toleranceRH>		
 		
 		<runMinutesRH>5</runMinutesRH>
 		
 		<switchNameRH>humidifier</switchNameRH>
 		
-		<targetTemp>60</targetTemp>
+		<targetTemp>30</targetTemp>
 		
 		<toleranceTemp>5</toleranceTemp>		
 		
-		<runMinutesTemp>10</runMinutesTemp>
+		<runMinutesTemp>5</runMinutesTemp>
 		
 		<switchNameTemp>temperature</switchNameTemp>
 	</settings>
 	
 	<status>
-		<lastRH>53.5</lastRH>
-		<lastTemp>64.76</lastTemp>
-		<lastDiscovery />
-		<lastCommandRH />
-		<lastCommandTemp />
+		<lastRH>53.3</lastRH>
+		<lastTemp>68.0</lastTemp>
+		<friendlyStatusRH>Not Running</friendlyStatusRH>
+		<lastCommandRH>2018-10-16 22:43:50.171143</lastCommandRH>
+		<friendlyStatusTemp>No Temp Power Draw</friendlyStatusTemp>
+		<lastCommandTemp>2018-10-16 22:46:03.495058</lastCommandTemp>
 	</status>
 </root>
