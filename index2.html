@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Humidifier Status</title>
+
+    <!-- Bootstrap Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <!-- Darkly theme minified CSS -->
+    <link rel="stylesheet" href="http://bootswatch.com/darkly/bootstrap.min.css">
+    
+    <!-- Bootstrap theme -->
+    <!-- <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css"> -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via filehttp:// -->
+    <!--[if lt IE 9]>
+      <script src="http://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="http://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        ul {
+            font-weight: bold;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+        <h2 class="text-center">Curing MEngs Status</h2>
+        <div class="row">
+            <div class="col">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <span class="badge">{rh}%</span>
+                        Relative Humidity
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge">{targetRH}%</span>
+                        RH Setpoint
+                    </li>
+			<li class="list-group-item">
+                        <span class="badge">{friendlyStatusRH}</span>
+                        Humidifier
+                    </li>
+		    </li>
+			<li class="list-group-item">
+                        <span class="badge">{lastCommandRH}</span>
+                        Last Run Command RH
+                    </li>
+                </ul>
+            </div>
+            <div class="col">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <span class="badge">{temp}&deg;F</span>
+                        Temperature
+                    </li>
+					<li class="list-group-item">
+                        <span class="badge">{targetTemp}&deg;F</span>
+                        Temp Setpoint
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge">{friendlyStatusTemp}</span>
+                        Refridgerator
+                    </li>
+		    </li>
+			<li class="list-group-item">
+                        <span class="badge">{lastCommandTemp}</span>
+                        Last Run Command Temp
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- Latest compiled and minified Bootstrap JavaScript -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -2,8 +2,11 @@
 # take control.py and th_2.c 
 # need to add a runningRH/runningTemp to make sure that it stays on/off for min time
 
+#!/usr/bin/python2.7
 
 # Imports
+import sys
+import subprocess
 from subprocess import Popen, PIPE
 from os.path import expanduser
 from ouimeaux.environment import Environment
@@ -165,9 +168,10 @@ minTemp = targetTemp - toleranceTemp
 p = Popen([os.path.join(xmlPath,"./th_2")], stdout=PIPE, stderr=PIPE)
 output, err = p.communicate()
 
+
 # Check if an error was returned
 if err != '':
-    print "ERROR: th_2 returned error "+str(err)
+    print("ERROR: th_2 returned error "+str(err))
     # Exit with error status
     raise SystemExit(1)
 
@@ -222,19 +226,19 @@ elif isSwitchStopped(switchRH):
 
 # If status is still 4, there's an issue reading the status
 if statusRH == 4:
-    print "ERROR: Unable to read WeMo status"
+    print ("ERROR: Unable to read WeMo status")
     # Exit with error status
     raise SystemExit(1)
 
 
 # Start or stop humidifier based on time and relative humidity
-if statusRH == 0 and rh <= minRH:
-    if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
-	startSwitch(switchRH)
-	lastCommandRH = currentDateTime
-	friendlyStatusRH = "Running"
+if (statusRH == 0 and rh <= minRH):
+    if ((lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime):
+        startSwitch(switchRH)
+        lastCommandRH = currentDateTime
+        friendlyStatusRH = "Running"
     else:
-	print "RH Off-Time Too Short"
+        print ("RH Off-Time Too Short")
 
 elif statusRH > 0 and (rh >= maxRH):
     if (lastCommandRH + timedelta(minutes=runMinutesRH)) < currentDateTime:
@@ -242,13 +246,13 @@ elif statusRH > 0 and (rh >= maxRH):
         lastCommandRH = currentDateTime
         friendlyStatusRH = "Not Running"#    statusXML.find("stoppedDateTime").text = str(currentDateTime)
     else:
-        print "RH On-Time Too Short"
+        print ("RH On-Time Too Short")
 
 elif statusRH == 2:
     sendOutNoPowerAlert()
     friendlyStatusRH = "No Water"
 	
-print "RH Status: "+str(friendlyStatusRH)
+print ("RH Status: "+str(friendlyStatusRH))
 print ("RH Value: " + str(rh) + " (" + str(minRH) + ")")
 
 
@@ -270,7 +274,7 @@ elif isSwitchStopped(switchTemp):
 
 # If status is still 4, there's an issue reading the status
 if statusTemp == 4:
-    print "ERROR: Unable to read Temp WeMo status"
+    print ("ERROR: Unable to read Temp WeMo status")
     # Exit with error status
     raise SystemExit(1)
 
@@ -282,7 +286,7 @@ if statusTemp == 0 and temp >= maxTemp:
         lastCommandTemp = currentDateTime
         friendlyStatusTemp = "Running"
     else:
-        print "Temp Off-Time Too Short"	
+        print ("Temp Off-Time Too Short"	)
 
 elif statusTemp > 0 and (temp <= minTemp):
     if (lastCommandTemp + timedelta(minutes=runMinutesTemp)) < currentDateTime:
@@ -290,14 +294,14 @@ elif statusTemp > 0 and (temp <= minTemp):
         lastCommandTemp = currentDateTime
         friendlyStatusTemp = "Not Running"
     else:
-        print "RH On-Time Too Short"
+        print ("RH On-Time Too Short")
 
     
 elif statusTemp == 2:
     sendOutNoPowerAlert()
     friendlyStatusTemp = "No Temp Power Draw"
 	
-print "Temp Status: "+str(friendlyStatusTemp)
+print ("Temp Status: "+str(friendlyStatusTemp))
 print("Temp Value: " + str(temp) + " (" + str(maxTemp) + ")")
 	
 	

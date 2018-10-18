@@ -3,7 +3,7 @@
 		
 		<enabled>True</enabled>
 		
-		<targetRH>100</targetRH>
+		<targetRH>80</targetRH>
 		
 		<toleranceRH>5</toleranceRH>		
 		
@@ -11,7 +11,7 @@
 		
 		<switchNameRH>humidifier</switchNameRH>
 		
-		<targetTemp>30</targetTemp>
+		<targetTemp>58</targetTemp>
 		
 		<toleranceTemp>5</toleranceTemp>		
 		
@@ -21,11 +21,11 @@
 	</settings>
 	
 	<status>
-		<lastRH>53.3</lastRH>
-		<lastTemp>68.0</lastTemp>
-		<friendlyStatusRH>Not Running</friendlyStatusRH>
-		<lastCommandRH>2018-10-16 22:43:50.171143</lastCommandRH>
+		<lastRH>52.1</lastRH>
+		<lastTemp>70.88</lastTemp>
+		<friendlyStatusRH>No Water</friendlyStatusRH>
+		<lastCommandRH>2018-10-17 21:56:03.467932</lastCommandRH>
 		<friendlyStatusTemp>No Temp Power Draw</friendlyStatusTemp>
-		<lastCommandTemp>2018-10-16 22:46:03.495058</lastCommandTemp>
+		<lastCommandTemp>2018-10-17 21:56:03.467932</lastCommandTemp>
 	</status>
 </root>
